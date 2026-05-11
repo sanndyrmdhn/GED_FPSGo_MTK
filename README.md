@@ -38,11 +38,51 @@ ls /sys/kernel/fpsgo
 #For result command ( supported FPSGo )
 common  fbt  fstb  minitop  xgf
 
+#Using Terminal Emulator or Termux ( MTK PPM )
+su
+cat /proc/ppm/policy_status
+
+#For result command ( supported MTK PPM )
+[0] PPM_POLICY_PTPOD: disabled
+[1] PPM_POLICY_UT: disabled
+[3] PPM_POLICY_FORCE_LIMIT: disabled
+[4] PPM_POLICY_PWR_THRO: disabled
+[5] PPM_POLICY_THERMAL: disabled
+[6] PPM_POLICY_DLPT: disabled
+[7] PPM_POLICY_HARD_USER_LIMIT: enabled
+[8] PPM_POLICY_USER_LIMIT: disabled
+[9] PPM_POLICY_LCM_OFF: disabled
+[2] PPM_POLICY_SYS_BOOST: enabled
+
+Usage: echo <idx> <1/0> > /proc/ppm/policy_status
+
+#Using Terminal Emulator or Termux ( GPUFREQ )
+su
+cat /proc/gpufreq/gpufreq_limit_table
+
+#For result command ( supported GPUFREQ )
+echo [id][up_enable][low_enable] > /proc/gpufreq/gpufreq_limit_table
+ex: echo 3 0 0 > /proc/gpufreq/gpufreq_limit_table
+means disable THERMAL upper_limit_idx & lower_limit_idx
+
+         [name]  [id]     [prio]   [up_idx] [up_enable]  [low_idx] [low_enable]
+         STRESS     0          8         -1          1         -1          1
+           PROC     1          7         -1          1         -1          1
+          PTPOD     2          6         -1          1         -1          1
+        THERMAL     3          5         -1          0         -1          1
+        BATT_OC     4          5         -1          0         -1          1
+       BATT_LOW     5          5         -1          0         -1          1
+   BATT_PERCENT     6          5         -1          0         -1          1
+            PBM     7          5          0          0         -1          1
+         POLICY     8          4         -1          1         -1          1
+
+
 ```
 
 ## What Has Been Changed:
 ```bash
 #services.sh
+#Tweak with Graphics Enhancement Driver And FPSGo
 echo 1 > /sys/module/ged/parameters/gx_frc_mode
 echo 1 > /sys/module/ged/parameters/gx_boost_on
 echo 1 > /sys/module/ged/parameters/gx_game_mode
@@ -55,6 +95,30 @@ echo 101 > /sys/kernel/ged/hal/gpu_boost_level
 echo 1 > /sys/kernel/fpsgo/fbt/boost_ta
 echo 0 > /sys/kernel/fpsgo/fstb/adopt_low_fps
 echo 2 > /sys/kernel/fpsgo/fbt/llf_task_policy
+
+# RTMM
+echo 800 > /sys/kernel/mm/rtmm/reclaim/auto_reclaim_max
+echo 2048 > /sys/kernel/mm/rtmm/reclaim/global_reclaim_max
+echo 80 > /sys/kernel/mm/rtmm/reclaim/default_reclaim_swappiness
+echo true > /sys/kernel/mm/swap/vma_ra_enabled
+
+#Sleep 2 minute
+sleep 120
+
+#MTK PPM
+echo 2 1 > /proc/ppm/policy_status
+echo 5 0 > /proc/ppm/policy_status
+echo 4 0 > /proc/ppm/policy_status
+echo 6 0 > /proc/ppm/policy_status
+
+#GPUFREQ Disable Thermal
+echo 3 0 1 > /proc/gpufreq/gpufreq_limit_table
+echo 4 0 1 > /proc/gpufreq/gpufreq_limit_table
+echo 5 0 1 > /proc/gpufreq/gpufreq_limit_table
+echo 6 0 1 > /proc/gpufreq/gpufreq_limit_table
+echo 7 0 1 > /proc/gpufreq/gpufreq_limit_table
+
+
 ```
 
 ## Compatibility
